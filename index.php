@@ -1,3 +1,8 @@
+<?php
+    session_start();
+    include('php/config.php');
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,18 +41,50 @@
   <div class="container-fluid d-flex justify-content-center p-5">
     <div class="continer-fluid d-flex flex-column border border-success-subtle rounded p-3 w-50 shadow">
       <h1 class="border-bottom border-success-subtle w-100 py-2">Login</h1>
+      <?php
+          if(isset($_POST['submit'])){
+            $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+            $password = $_POST['password'] ?? '';
+            
+            if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+              echo "<p class='text-danger'>This e-mail is incorrect.</p>";
+            }else{
+              
+              $stmt = $con->prepare('SELECT * FROM users WHERE Email = ?');
+              $stmt->bind_param("s", $email);
+              $stmt->execute();
+              $result = $stmt->get_result();
 
+              if($result->num_rows === 1){
+                $user = $result->fetch_assoc();
+
+                if(password_verify($password, $user['Password'])){
+                  $_SESSION['user_id'] = $user['id'];
+                  $_SESSION['user_name'] = $user['Name']; 
+
+                  header ('Location: home.php');
+                  exit();
+                }else{
+                  echo "<p class='text-danger'>Invalid password</p>";
+                }
+              }  else{
+                  echo "<p class='text-danger'>User not found</p>";
+                }
+              $stmt->close();
+              }      
+            }
+  
+      ?>
       <form action="#" method="POST">
         <div class="py-1">
-          <label for="email" class="form-label">E-mail</label>
           <input type="text" class="form-control" name="email" id="email">
         </div>
         <div class="py-1">
           <label for="password" class="form-label">Password</label>
-          <input type="text" class="form-control" name="password" id="password">
+          <input type="password" class="form-control" name="password" id="password">
         </div>
         <div class="d-flex justify-content-end">
-            <input type="submit" class="btn btn-success my-3" value="Login">
+            <input type="submit" name="submit" class="btn btn-success my-3" value="Login">
         </div>
       
       </form>
