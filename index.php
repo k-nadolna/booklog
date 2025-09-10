@@ -59,7 +59,7 @@
                 $user = $result->fetch_assoc();
 
                 if(password_verify($password, $user['Password'])){
-                  $_SESSION['user_id'] = $user['id'];
+                  $_SESSION['user_id'] = $user['Id'];
                   $_SESSION['user_name'] = $user['Name']; 
 
                   header ('Location: home.php');
